@@ -1,6 +1,7 @@
 #include "opengl_mesh.h"
 #include "opengl_shader.h"
 #include "glad/glad.h"
+#include <cassert>
 
 void renderer::opengl_mesh::add_face(const renderer::face &face) noexcept {}
 
@@ -46,6 +47,7 @@ renderer::opengl_mesh::opengl_mesh(const renderer::vertices &verts,
     glVertexAttribPointer(opengl_shader::KNOWN_LOCATIONS::NormalPosition, 3,
                           GL_FLOAT, GL_FALSE, 0, nullptr);
   }
+
   element_buffer = gen_typed_buffer<GL_ELEMENT_ARRAY_BUFFER>(ind);
   m_primitives_count = ind.size();
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, element_buffer);
@@ -62,10 +64,12 @@ renderer::opengl_mesh::~opengl_mesh() noexcept {
                              opengl_shader::KNOWN_LOCATIONS::NormalPosition);
   glDeleteBuffers(1, &vertex_buffer);
   glDeleteBuffers(1, &element_buffer);
-  if (texcoord_buffer == 0)
+  if (texcoord_buffer != 0)
     glDeleteBuffers(1, &texcoord_buffer);
-  if (normal_buffer == 0)
+  if (normal_buffer != 0)
     glDeleteBuffers(1, &normal_buffer);
+
+  assert(!glIsBuffer(vertex_buffer) && !glIsBuffer(texcoord_buffer) && !glIsBuffer(normal_buffer) && !glIsBuffer(element_buffer));
 
   glDeleteVertexArrays(1, &mesh_vao);
 }
