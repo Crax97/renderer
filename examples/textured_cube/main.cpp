@@ -35,7 +35,7 @@ public:
   void on_app_startup() override {
 
     auto &api = get_graphics_api();
-    cube_mesh = utilities::mesh_load_from_path(api, "assets/cube.obj");
+    cube_mesh = utilities::mesh_load_from_path(api, "assets/cube.obj")[0];
     cube_shader =
         api->compile_shader(utilities::read_file("assets/vertex.vs"),
                             utilities::read_file("assets/fragment.fs"));

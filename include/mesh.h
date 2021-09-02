@@ -9,12 +9,19 @@ namespace renderer {
         float x;
         float y;
         float z;
+
+        vertex(float _x, float _y, float _z) noexcept
+            : x(_x), y(_y), z(_z) {}
+        vertex() : vertex(0.0f, 0.0f, 0.0f) {};
     };
     using normal = vertex;
 
     struct tex_coord {
         float u;
         float v;
+        tex_coord(float _u, float _v) noexcept
+            : u(_u), v(_v) {}
+        tex_coord() : tex_coord(0.0f, 0.0f) {}
     };
 
     using vertices = std::vector<vertex>;
