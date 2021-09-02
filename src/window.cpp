@@ -1,6 +1,6 @@
 #include "window.h"
-#include "SDL_stdinc.h"
-#include "SDL_video.h"
+#include <SDL2/SDL_stdinc.h>
+#include <SDL2/SDL_video.h>
 #include <SDL2/SDL.h>
 
 #include <assert.h>

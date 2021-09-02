@@ -2,7 +2,7 @@
 #include "opengl_mesh.h"
 #include "opengl_shader.h"
 #include "opengl_texture.h"
-#include "SDL_video.h"
+#include <SDL2/SDL_video.h>
 
 #include <cassert>
 #include <iostream>

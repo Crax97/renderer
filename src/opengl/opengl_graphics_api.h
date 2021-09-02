@@ -1,8 +1,8 @@
 #pragma once
 
 #include <glad/glad.h>
+#include <SDL2/SDL_video.h>
 #include "graphics_api.h"
-#include "SDL_video.h"
 
 namespace renderer {
 

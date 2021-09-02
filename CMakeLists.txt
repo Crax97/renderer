@@ -26,12 +26,15 @@ if (OPENGL_FOUND)
     add_compile_definitions(OPENGL_FOUND)
     set(SOURCES ${SOURCES} ${OPENGL_SOURCES})
     set(OPTIONAL_INCLUDES src/opengl/)
-    set(OPTIONAL_LINK_LIBS dl)
+
+    if(NOT WIN32)
+        set(OPTIONAL_LINK_LIBS dl)
+    endif()
 endif()
 
 add_library(renderer STATIC ${SOURCES})
-target_include_directories(renderer PUBLIC include)
-target_include_directories(renderer PRIVATE ${OPTIONAL_INCLUDES} ${SDL2_INCLUDE_DIRS})
+target_include_directories(renderer PUBLIC include ${SDL2_INCLUDE_DIRS})
+target_include_directories(renderer PRIVATE ${OPTIONAL_INCLUDES})
 
 target_link_libraries(renderer ${OPTIONAL_LINK_LIBS} ${SDL2_LIBRARIES})
 
