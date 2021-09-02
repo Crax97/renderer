@@ -1,18 +1,16 @@
 #pragma once
 
-#include "mesh.h"
-#include "graphics_api.h"
 #include "api_factory.h"
+#include "graphics_api.h"
+#include "mesh.h"
 #include "shader.h"
-#include "window.h"
 #include "texture.h"
+#include "window.h"
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "../commons/stb_image.h"
 
-#define TINYOBJLOADER_IMPLEMENTATION 
-#include "../commons/tiny_obj_loader.h"
-
+#include "../commons/OBJ_Loader.h"
 
 #include "../commons/glm/glm.hpp"
 #include "../commons/glm/gtc/type_ptr.hpp"
@@ -25,70 +23,39 @@
 #include <vector>
 
 namespace utilities {
-std::vector<std::shared_ptr<renderer::mesh>>
+inline std::vector<std::shared_ptr<renderer::mesh>>
 mesh_load_from_path(const std::unique_ptr<renderer::graphics_api> &api,
                     const std::string &file_path) {
   using namespace renderer;
-  tinyobj::ObjReader reader;
-  if (!reader.ParseFromFile(file_path)) {
-    std::cerr << "Could not load obj file " << file_path << "\n";
-    std::exit(-1);
-  }
+  std::vector<std::shared_ptr<renderer::mesh>> meshes;
+  objl::Loader loader;
+  if (loader.LoadFile(file_path)) {
+    for (const auto &mesh : loader.LoadedMeshes) {
 
-  auto& shapes = reader.GetShapes();
-  auto& attrib = reader.GetAttrib();
+      renderer::vertices verts;
+      renderer::indices inds;
+      renderer::tex_coords coords;
+      renderer::normals norms;
+      int i = 0;
+      for (auto &index : mesh.Indices) {
+        inds.emplace_back(index);
+        auto vert_pos = mesh.Vertices[i].Position;
+        auto tex_coord = mesh.Vertices[i].TextureCoordinate;
+        auto norm = mesh.Vertices[i].Normal;
 
-  std::vector<std::shared_ptr<mesh>> meshes;
+        verts.emplace_back(vert_pos.X, vert_pos.Y, vert_pos.Z);
+        norms.emplace_back(norm.X, norm.Y, norm.Z);
+        coords.emplace_back(tex_coord.X, tex_coord.Y);
 
-  for (size_t s = 0; s < shapes.size(); s++) {
-      vertices verts;
-      indices inds;
-      tex_coords coords;
-      normals norms;
-      size_t index_offset = 0;
-
-      auto& first_mesh = shapes[s].mesh;
-      for (size_t f = 0; f < first_mesh.num_face_vertices.size(); f++) {
-          size_t fv = static_cast<size_t>(first_mesh.num_face_vertices[f]);
-          for (size_t v = 0; v < fv; v++) {
-              // access to vertex
-              tinyobj::index_t idx = first_mesh.indices[index_offset + v];
-              inds.push_back(idx.vertex_index);
-
-              float vx = attrib.vertices[3 * size_t(idx.vertex_index) + 0];
-              float vy = attrib.vertices[3 * size_t(idx.vertex_index) + 1];
-              float vz = attrib.vertices[3 * size_t(idx.vertex_index) + 2];
-              verts.emplace_back(vx, vy, vz);
-
-              // Check if `normal_index` is zero or positive. negative = no normal data
-              if (idx.normal_index >= 0) {
-                  float nx = attrib.normals[3 * size_t(idx.normal_index) + 0];
-                  float ny = attrib.normals[3 * size_t(idx.normal_index) + 1];
-                  float nz = attrib.normals[3 * size_t(idx.normal_index) + 2];
-                  norms.emplace_back(nx, ny, nz);
-              }
-
-              // Check if `texcoord_index` is zero or positive. negative = no texcoord data
-              if (idx.texcoord_index >= 0) {
-                  float tx = attrib.texcoords[2 * size_t(idx.texcoord_index) + 0];
-                  float ty = attrib.texcoords[2 * size_t(idx.texcoord_index) + 1];
-                  coords.emplace_back(tx, ty);
-              }
-
-              // Optional: vertex colors
-              // tinyobj::real_t red   = attrib.colors[3*size_t(idx.vertex_index)+0];
-              // tinyobj::real_t green = attrib.colors[3*size_t(idx.vertex_index)+1];
-              // tinyobj::real_t blue  = attrib.colors[3*size_t(idx.vertex_index)+2];
-          }
-          index_offset += fv;
-          meshes.emplace_back(api->create_mesh(verts, inds, norms, coords));
+        i++;
       }
+      meshes.emplace_back(api->create_mesh(verts, inds, norms, coords));
+    }
   }
-
-   return meshes;
+  return meshes;
 }
 
-std::string read_file(const std::string &file_path) {
+inline std::string read_file(const std::string &file_path) {
   std::ifstream file;
   file.open(file_path);
   if (!file.is_open()) {
@@ -103,7 +70,7 @@ std::string read_file(const std::string &file_path) {
   return file_content;
 }
 
-std::shared_ptr<renderer::texture>
+inline std::shared_ptr<renderer::texture>
 texture_load_from_path(const std::unique_ptr<renderer::graphics_api> &api,
                        const std::string &file_path) {
   using namespace renderer;
