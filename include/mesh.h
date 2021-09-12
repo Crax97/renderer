@@ -5,6 +5,7 @@
 #include <optional>
 
 namespace renderer {
+#pragma pack(push, 1)
     struct vertex {
         float x;
         float y;
@@ -14,8 +15,10 @@ namespace renderer {
             : x(_x), y(_y), z(_z) {}
         vertex() : vertex(0.0f, 0.0f, 0.0f) {};
     };
+#pragma pack(pop)
     using normal = vertex;
 
+#pragma pack(push, 1)
     struct tex_coord {
         float u;
         float v;
@@ -23,6 +26,7 @@ namespace renderer {
             : u(_u), v(_v) {}
         tex_coord() : tex_coord(0.0f, 0.0f) {}
     };
+#pragma pack(pop)
 
     using vertices = std::vector<vertex>;
     using normals = std::vector<normal>;

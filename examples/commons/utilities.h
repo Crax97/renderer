@@ -23,6 +23,20 @@
 #include <vector>
 
 namespace utilities {
+inline std::shared_ptr<renderer::mesh> create_quad(const std::unique_ptr<renderer::graphics_api>& api) {
+    static std::shared_ptr<renderer::mesh> g_quad_mesh = api->create_mesh({
+            {-1.0f, 1.0f, 0.0f},
+            {1.0f, 1.0f, 0.0f},
+            {-1.0f, -1.0f, 0.0f},
+            {1.0f, -1.0f, 0.0f},
+        }, { 0, 1, 2, 1, 2, 3 }, { {0, 0, 1},{0, 0, 1},{0, 0, 1},{0, 0, 1}
+        }, { { .0f, 1.0f },
+        { 1.0f, 1.0f},
+        { .0f, .0f},
+        { 1.0f, .0f} });
+    return g_quad_mesh;
+}
+
 inline std::vector<std::shared_ptr<renderer::mesh>>
 mesh_load_from_path(const std::unique_ptr<renderer::graphics_api> &api,
                     const std::string &file_path) {
@@ -33,23 +47,19 @@ mesh_load_from_path(const std::unique_ptr<renderer::graphics_api> &api,
     for (const auto &mesh : loader.LoadedMeshes) {
 
       renderer::vertices verts;
-      renderer::indices inds;
       renderer::tex_coords coords;
       renderer::normals norms;
-      int i = 0;
-      for (auto &index : mesh.Indices) {
-        inds.emplace_back(index);
-        auto vert_pos = mesh.Vertices[i].Position;
-        auto tex_coord = mesh.Vertices[i].TextureCoordinate;
-        auto norm = mesh.Vertices[i].Normal;
+      for (const auto &vert : mesh.Vertices) {
+
+        const auto& vert_pos = vert.Position;
+        const auto& tex_coord = vert.TextureCoordinate;
+        const auto& norm = vert.Normal;
 
         verts.emplace_back(vert_pos.X, vert_pos.Y, vert_pos.Z);
         norms.emplace_back(norm.X, norm.Y, norm.Z);
         coords.emplace_back(tex_coord.X, tex_coord.Y);
-
-        i++;
       }
-      meshes.emplace_back(api->create_mesh(verts, inds, norms, coords));
+      meshes.emplace_back(api->create_mesh(verts, mesh.Indices, norms, coords));
     }
   }
   return meshes;
