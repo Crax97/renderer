@@ -45,12 +45,12 @@ public:
   void on_app_startup() override {
 
     auto &api = get_graphics_api();
-    cube_mesh = utilities::mesh_load_from_path(api, "assets/cube.obj")[0];
+    cube_mesh = utilities::mesh_load_from_path(api, "assets/models/cube.obj")[0];
     quad_mesh = utilities::create_quad(api);
     cube_shader =
-        api->compile_shader(utilities::read_file("assets/vertex.vs"),
-                            utilities::read_file("assets/fragment.fs"));
-    cube_texture = utilities::texture_load_from_path(api, "assets/dice.png");
+        api->compile_shader(utilities::read_file("assets/shaders/basic.vs"),
+                            utilities::read_file("assets/shaders/basic.fs"));
+    cube_texture = utilities::texture_load_from_path(api, "assets/textures/dice.png");
   }
 
   void on_app_loop(float delta_seconds) override {
