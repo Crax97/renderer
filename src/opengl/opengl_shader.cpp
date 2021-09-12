@@ -1,19 +1,38 @@
 #include "opengl_shader.h"
 #include "opengl_texture.h"
 
+#include <iostream>
 #include <cassert>
 #include <glad/glad.h>
 
-renderer::opengl_shader::opengl_shader(GLuint program) noexcept
-    : m_program(program) {
-  assert(glIsProgram(m_program));
-  glBindAttribLocation(m_program, KNOWN_LOCATIONS::VertexPosition, "vertex");
-  glBindAttribLocation(m_program, KNOWN_LOCATIONS::TexcoordPosition,
-                       "texcoord");
-  glBindAttribLocation(m_program, KNOWN_LOCATIONS::NormalPosition, "normal");
+renderer::opengl_shader::opengl_shader(GLuint vs, GLuint fs) noexcept{
+    m_program = glCreateProgram();
+    glAttachShader(m_program, vs);
+    glAttachShader(m_program, fs);
+
+    glBindAttribLocation(m_program, KNOWN_LOCATIONS::VertexPosition, "vertex");
+    glBindAttribLocation(m_program, KNOWN_LOCATIONS::TexcoordPosition,
+        "texcoord");
+    glBindAttribLocation(m_program, KNOWN_LOCATIONS::NormalPosition, "normal");
+
+    glLinkProgram(m_program);
+
+    GLint stat = GL_TRUE;
+    glGetProgramiv(m_program, GL_LINK_STATUS, &stat);
+    if (stat != GL_TRUE) {
+        char buf[2049];
+        GLint len;
+        glGetProgramInfoLog(m_program, 2048, &len, buf);
+        std::cout << "Error compiling shading program " << m_program << std::string(buf, len) << "\n";
+        glDeleteProgram(m_program);
+        m_program = 0;
+    }
 }
 
-void renderer::opengl_shader::use() { glUseProgram(m_program); }
+void renderer::opengl_shader::use() {
+    if(m_program != 0) 
+        glUseProgram(m_program);
+}
 
 void renderer::opengl_shader::set_uniform_matrix4x4(
     const std::string &uniform_name, float *mat4x4) {

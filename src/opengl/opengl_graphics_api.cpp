@@ -132,6 +132,9 @@ renderer::opengl_graphics_api::opengl_graphics_api(SDL_Window *Window) noexcept 
 
 void renderer::opengl_graphics_api::pre_draw() noexcept {
   SDL_GL_MakeCurrent(this->Window, this->GLContext);
+  int win_width, win_height;
+  SDL_GetWindowSize(this->Window, &win_width, &win_height);
+  glViewport(0, 0, win_width, win_height);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
   glBindBuffer(GL_UNIFORM_BUFFER, m_unif_block_buffer);
 }
@@ -235,21 +238,11 @@ std::shared_ptr<renderer::shader> renderer::opengl_graphics_api::compile_shader(
     const std::string &pixel_shader_src) noexcept {
   auto vs = compile_gl_shader(vertex_shader_src, GL_VERTEX_SHADER);
   auto fs = compile_gl_shader(pixel_shader_src, GL_FRAGMENT_SHADER);
-  assert(vs && fs);
-  GLuint prog = glCreateProgram();
-  glAttachShader(prog, vs.value());
-  glAttachShader(prog, fs.value());
-  glLinkProgram(prog);
 
-  GLint stat = GL_TRUE;
-  glGetProgramiv(prog, GL_LINK_STATUS, &stat);
-  if (stat != GL_TRUE) {
-    char buf[2049];
-    GLint len;
-    glGetProgramInfoLog(prog, 2048, &len, buf);
-    std::cerr << std::string(buf, len) << "\n";
-    glDeleteProgram(prog);
+  if (!vs.has_value() || !fs.has_value()) {
+    // TODO log error
+    return nullptr;
   }
 
-  return std::make_shared<opengl_shader>(prog);
+  return std::make_shared<opengl_shader>(vs.value(), fs.value());
 }

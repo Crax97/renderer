@@ -12,7 +12,7 @@ private:
   GLint get_uniform_location(const std::string &basicString) noexcept;
 
 public:
-  opengl_shader(GLuint program) noexcept;
+  opengl_shader(GLuint vs, GLuint fs) noexcept;
   void use() override;
   void set_uniform_matrix4x4(const std::string &uniform_name,
                              float *mat4x4) override;

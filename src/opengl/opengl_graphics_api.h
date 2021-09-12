@@ -11,7 +11,6 @@ private:
   SDL_GLContext GLContext;
   SDL_Window *Window;
   GLuint m_unif_block_buffer{};
-
 public:
   explicit opengl_graphics_api(SDL_Window *Window) noexcept;
 
