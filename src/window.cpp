@@ -11,6 +11,11 @@ renderer::window::window(const std::string &title, int width, int height,
   Uint32 flags = 0;
 #ifdef OPENGL_FOUND
   flags |= SDL_WINDOW_OPENGL;
+  SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+  SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
+  SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 6);
+  SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 16);
+  SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 #endif
 #ifdef VULKAN_FOUND
   flags |= SDL_WINDOW_VULKAN;
