@@ -11,6 +11,8 @@ struct SDL_Window;
 namespace renderer {
 
 class graphics_api {
+private:
+	virtual void* map_constant_buffer_impl(const size_t buffer_size) = 0;
 public:
   virtual ~graphics_api() noexcept = default;
 
@@ -20,5 +22,13 @@ public:
 
   virtual void pre_draw() noexcept = 0;
   virtual void post_draw() noexcept = 0;
+
+  template<typename T>
+  T* map_constant_buffer() {
+	  return static_cast<T*>(map_constant_buffer_impl(sizeof(T)));
+  }
+
+  virtual void unmap_constant_buffer() = 0;
+
 };
 } // namespace renderer

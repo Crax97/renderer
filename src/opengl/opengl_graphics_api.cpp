@@ -125,7 +125,8 @@ renderer::opengl_graphics_api::opengl_graphics_api(SDL_Window *Window) noexcept 
   glClearColor(0.3f, 0.3, 0.3f, 1.0f);
   glGenBuffers(1, &m_unif_block_buffer);
   glBindBuffer(GL_UNIFORM_BUFFER, m_unif_block_buffer);
-  glBufferData(GL_UNIFORM_BUFFER, 1024, nullptr, GL_DYNAMIC_DRAW);
+  glBufferData(GL_UNIFORM_BUFFER, 4, nullptr, GL_DYNAMIC_DRAW);
+  glBindBufferRange(GL_UNIFORM_BUFFER, 0, m_unif_block_buffer, 0, 4);
 
   glDebugMessageCallback(&gl_debug_message_callback, nullptr);
 }
@@ -144,6 +145,30 @@ void renderer::opengl_graphics_api::post_draw() noexcept {
 }
 renderer::opengl_graphics_api::~opengl_graphics_api() noexcept {
   SDL_GL_DeleteContext(this->GLContext);
+}
+
+void* renderer::opengl_graphics_api::map_constant_buffer_impl(const size_t buffer_size)
+{
+    glBindBuffer(GL_UNIFORM_BUFFER, m_unif_block_buffer);
+
+    GLint current_buffer_size;
+    glGetBufferParameteriv(GL_UNIFORM_BUFFER, GL_BUFFER_SIZE, &current_buffer_size);
+    if (current_buffer_size < buffer_size) {
+        resize_uniform_buffer(buffer_size);
+    }
+    return glMapBuffer(GL_UNIFORM_BUFFER, GL_READ_WRITE);
+}
+
+void renderer::opengl_graphics_api::resize_uniform_buffer(const size_t& buffer_size)
+{
+
+    glBufferData(GL_UNIFORM_BUFFER, buffer_size, nullptr, GL_DYNAMIC_DRAW);
+    glBindBufferRange(GL_UNIFORM_BUFFER, 0, m_unif_block_buffer, 0, buffer_size);
+}
+
+void renderer::opengl_graphics_api::unmap_constant_buffer()
+{
+    glUnmapBuffer(GL_UNIFORM_BUFFER);
 }
 
 std::shared_ptr<renderer::mesh> renderer::opengl_graphics_api::create_mesh(

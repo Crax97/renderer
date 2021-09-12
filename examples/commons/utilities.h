@@ -23,6 +23,12 @@
 #include <vector>
 
 namespace utilities {
+#pragma pack(push, 1)
+    struct application_data {
+        glm::mat4 mvp;
+    };
+#pragma pack(pop)
+
 inline std::shared_ptr<renderer::mesh> create_quad(const std::unique_ptr<renderer::graphics_api>& api) {
     static std::shared_ptr<renderer::mesh> g_quad_mesh = api->create_mesh({
             {-1.0f, 1.0f, 0.0f},

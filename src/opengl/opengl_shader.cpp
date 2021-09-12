@@ -27,6 +27,11 @@ renderer::opengl_shader::opengl_shader(GLuint vs, GLuint fs) noexcept{
         glDeleteProgram(m_program);
         m_program = 0;
     }
+
+    GLuint uniform_block_location = glGetUniformBlockIndex(m_program, "GlobalData");
+    if (uniform_block_location != GL_INVALID_INDEX) {
+        glUniformBlockBinding(m_program, uniform_block_location, 0);
+    }
 }
 
 void renderer::opengl_shader::use() {

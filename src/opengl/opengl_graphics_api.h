@@ -11,6 +11,7 @@ private:
   SDL_GLContext GLContext;
   SDL_Window *Window;
   GLuint m_unif_block_buffer{};
+  void resize_uniform_buffer(const size_t& buffer_size);
 public:
   explicit opengl_graphics_api(SDL_Window *Window) noexcept;
 
@@ -22,7 +23,9 @@ public:
   void pre_draw() noexcept override;
   void post_draw() noexcept override;
 
-  ~opengl_graphics_api() noexcept override;
+  void* map_constant_buffer_impl(const size_t buffer_size) override;
+  void unmap_constant_buffer() override;
 
+  ~opengl_graphics_api() noexcept override;
 };
 } // namespace renderer

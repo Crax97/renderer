@@ -5,7 +5,9 @@ in vec2 texcoord;
 in vec3 normal;
 
 out vec2 fs_texcoord;
-uniform mat4 mvp;
+layout(std140) uniform GlobalData {
+    mat4 mvp;
+};
 
 void main() {
     gl_Position = mvp * vec4(vertex, 1.0);

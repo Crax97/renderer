@@ -61,15 +61,20 @@ public:
     // Bind the cube program and configure it
     cube_shader->use();
     cube_shader->bind_textures({{"diffuse", cube_texture}});
-    cube_shader->set_uniform_matrix4x4("mvp", &mvp[0][0]);
-
     // The pre_draw hook should be called before any rendering operation occurs
     api->pre_draw();
-
-    cube_mesh->draw();
-    cube_shader->set_uniform_matrix4x4("mvp", &ortho[0][0]);
-    quad_mesh->draw();
-
+    {
+        auto* shader_data = api->map_constant_buffer<utilities::application_data>();
+        shader_data->mvp = mvp;
+        api->unmap_constant_buffer();
+        cube_mesh->draw();
+    }
+    {
+        auto* shader_data = api->map_constant_buffer<utilities::application_data>();
+        shader_data->mvp = ortho;
+        api->unmap_constant_buffer();
+        quad_mesh->draw();
+    }
     api->post_draw();
 
     m_rot_y += M_PI * 0.25f * delta_seconds;
