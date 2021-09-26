@@ -1,5 +1,6 @@
 
 #include "Init.h"
+#include "SDL_events.h"
 #include "SDL_keycode.h"
 #include "SDL_video.h"
 #include "api_factory.h"
@@ -16,7 +17,8 @@ private:
     glm::vec3 offset;
   };
 
-  float m_rot_y = 0.0f;
+  float m_pitch = 0.0f;
+  float m_yaw = 0.0f;
   glm::vec3 movement{0};
   glm::vec3 location{0};
   std::shared_ptr<renderer::mesh> quad_mesh;
@@ -25,12 +27,17 @@ private:
   std::shared_ptr<renderer::shader> instancing_program;
 
   glm::mat4 compute_mvp(float delta_seconds) {
-    auto projection = glm::perspective(static_cast<float>(M_PI) * 0.7f,
-                                       800.0f / 600.0f, 0.01f, 10000.0f);
-    auto view = glm::lookAt(location, location + glm::vec3(0, 0, 1),
-                            glm::vec3(0, 1, 0));
-    location += movement * delta_seconds * 20.0f;
-    auto model = glm::scale(glm::vec3(10.0f));
+    auto model = glm::rotate(m_yaw, glm::vec3(0, 1, 0)) *
+                 glm::rotate(m_pitch, glm::vec3(1, 0, 0));
+    auto right = glm::vec3(model[0]);
+    auto up = glm::vec3(model[1]);
+    auto fwd = glm::vec3(model[2]);
+    location += (fwd * movement.z + right * movement.x + up * movement.y) *
+                delta_seconds * 20.0f;
+
+    const float fov = glm::radians(45.0f);
+    auto projection = glm::perspective(fov, 800.0f / 600.0f, 0.01f, 10000.0f);
+    auto view = glm::lookAt(location, location + fwd, glm::vec3(0, 1, 0));
     auto mv = view;
     auto mvp = projection * mv;
     return mvp;
@@ -45,7 +52,8 @@ private:
 
 public:
   instancing_app()
-      : example_support_library::application("Instancing example", 800, 600) {}
+      : example_support_library::application("Instancing example", 1920, 1080) {
+  }
   void on_app_startup() override {
     class c_quad_data_descriptor : public renderer::instance_descriptor {
 
@@ -73,14 +81,14 @@ public:
 
     instanced_quad =
         api->create_instanced_mesh(quad_mesh, std::move(quad_data_descriptor));
-    const auto rows = 1000;
-    const auto columns = 1000;
+    const auto rows = 10000;
+    const auto columns = 50;
     const int r_b = -rows / 2;
     const int r_e = rows / 2;
-    for (int x = r_b; x < r_e; x++) {
+    for (int z = r_b; z < r_e; z++) {
       const int c_b = -columns / 2;
       const int c_e = columns / 2;
-      for (int z = c_b; z < c_e; z++) {
+      for (int x = c_b; x < c_e; x++) {
         auto instance = create_instance(x, z);
         instanced_quad->add_instance(instance);
       }
@@ -122,6 +130,10 @@ public:
     } else if (event.keysym.sym == SDLK_e) {
       movement.y = -1.0f;
     }
+
+    if (event.keysym.sym == SDLK_F8) {
+      get_window()->set_show_cursor(!get_window()->get_show_cursor());
+    }
   }
   void on_app_keyup(const SDL_KeyboardEvent &event) override {
 
@@ -134,6 +146,15 @@ public:
     if (event.keysym.sym == SDLK_q || event.keysym.sym == SDLK_e) {
       movement.y = 0.0f;
     }
+  }
+  void on_app_mousemove(const int delta_x, const int delta_y) override {
+    if (get_window()->get_show_cursor())
+      return;
+    const float mouse_cam_speed = 3.14f;
+    auto delta = get_window()->window_to_relative(delta_x, delta_y);
+    m_pitch = glm::clamp(m_pitch - delta.y * get_delta_time() * mouse_cam_speed,
+                         -3.14f * 0.5f, 3.14f * 0.5f);
+    m_yaw -= delta.x * get_delta_time() * mouse_cam_speed;
   }
 };
 

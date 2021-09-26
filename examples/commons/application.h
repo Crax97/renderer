@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Init.h"
+#include "SDL_mouse.h"
 #include "api_factory.h"
 #include "graphics_api.h"
 #include "window.h"
@@ -18,6 +19,9 @@ private:
   int m_return_code = 0;
   bool m_running = true;
   float m_total_time = 0.0f;
+  float m_delta_time = 0.0f;
+
+  int m_posx{0}, m_posy{0};
 
   std::string m_name;
   int m_window_width;
@@ -42,8 +46,25 @@ private:
       case SDL_KEYUP:
         on_app_keyup(evt.key);
         break;
+      case SDL_MOUSEBUTTONDOWN:
+        on_app_mousedown(evt.button);
+        break;
+      case SDL_MOUSEBUTTONUP:
+        on_app_mouseup(evt.button);
+        break;
       }
     }
+  }
+
+  void handle_mouse_motion() {
+    int pos_x, pos_y;
+    m_win->get_mouse_location(pos_x, pos_y);
+
+    if (pos_x > 0 || pos_y > 0) {
+      on_app_mousemove(pos_x, -pos_y);
+    }
+    if (!m_win->get_show_cursor())
+      m_win->set_mouse_location(0, 0);
   }
 
 public:
@@ -59,18 +80,18 @@ public:
 
     Uint64 now = SDL_GetPerformanceCounter();
     Uint64 last = 0;
-    float delta_time = 0.0f;
 
     while (m_running) {
       last = now;
 
       poll_events();
-      on_app_loop(delta_time);
+      handle_mouse_motion();
+      on_app_loop(m_delta_time);
 
       now = SDL_GetPerformanceCounter();
-      delta_time = static_cast<float>(now - last) /
-                   static_cast<float>(SDL_GetPerformanceFrequency());
-      m_total_time += delta_time;
+      m_delta_time = static_cast<float>(now - last) /
+                     static_cast<float>(SDL_GetPerformanceFrequency());
+      m_total_time += m_delta_time;
     }
 
     on_app_shutdown();
@@ -82,6 +103,8 @@ public:
     return m_api;
   }
 
+  std::unique_ptr<renderer::window> &get_window() noexcept { return m_win; }
+
   void set_title(const std::string &title) noexcept { m_win->set_title(title); }
 
   void app_exit(int return_code) {
@@ -90,6 +113,7 @@ public:
   }
 
   float get_total_time() { return m_total_time; }
+  float get_delta_time() { return m_delta_time; }
 
   virtual void on_app_startup() {}
   virtual void on_app_loop(float delta_seconds) {}
@@ -97,5 +121,8 @@ public:
 
   virtual void on_app_keydown(const SDL_KeyboardEvent &event) {}
   virtual void on_app_keyup(const SDL_KeyboardEvent &event) {}
+  virtual void on_app_mousemove(const int delta_x, const int delta_y) {}
+  virtual void on_app_mousedown(const SDL_MouseButtonEvent &event) {}
+  virtual void on_app_mouseup(const SDL_MouseButtonEvent &event) {}
 };
 } // namespace example_support_library
