@@ -29,6 +29,23 @@ private:
     m_api = renderer::api_factory::create_api("opengl", *m_win);
   }
 
+  void poll_events() {
+    SDL_Event evt;
+    while (SDL_PollEvent(&evt)) {
+      switch (evt.type) {
+      case SDL_QUIT:
+        app_exit(0);
+        break;
+      case SDL_KEYDOWN:
+        on_app_keydown(evt.key);
+        break;
+      case SDL_KEYUP:
+        on_app_keyup(evt.key);
+        break;
+      }
+    }
+  }
+
 public:
   application(std::string name, int window_width, int window_height)
       : m_name(std::move(name)), m_window_width(window_width),
@@ -46,21 +63,10 @@ public:
 
     while (m_running) {
       last = now;
-      SDL_Event evt;
-      if (SDL_PollEvent(&evt) == 1) {
-        switch (evt.type) {
-        case SDL_QUIT:
-          app_exit(0);
-          break;
-        case SDL_KEYDOWN:
-          on_app_keydown(evt.key);
-          break;
-        case SDL_KEYUP:
-          on_app_keyup(evt.key);
-          break;
-        }
-      }
+
+      poll_events();
       on_app_loop(delta_time);
+
       now = SDL_GetPerformanceCounter();
       delta_time = static_cast<float>(now - last) /
                    static_cast<float>(SDL_GetPerformanceFrequency());
