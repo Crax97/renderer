@@ -17,6 +17,7 @@ private:
 
   int m_return_code = 0;
   bool m_running = true;
+  float m_total_time = 0.0f;
 
   std::string m_name;
   int m_window_width;
@@ -46,16 +47,24 @@ public:
     while (m_running) {
       last = now;
       SDL_Event evt;
-      SDL_PollEvent(&evt);
-      switch (evt.type) {
-      case SDL_QUIT:
-        app_exit(0);
-        break;
+      if (SDL_PollEvent(&evt) == 1) {
+        switch (evt.type) {
+        case SDL_QUIT:
+          app_exit(0);
+          break;
+        case SDL_KEYDOWN:
+          on_app_keydown(evt.key);
+          break;
+        case SDL_KEYUP:
+          on_app_keyup(evt.key);
+          break;
+        }
       }
       on_app_loop(delta_time);
       now = SDL_GetPerformanceCounter();
       delta_time = static_cast<float>(now - last) /
                    static_cast<float>(SDL_GetPerformanceFrequency());
+      m_total_time += delta_time;
     }
 
     on_app_shutdown();
@@ -67,13 +76,20 @@ public:
     return m_api;
   }
 
+  void set_title(const std::string &title) noexcept { m_win->set_title(title); }
+
   void app_exit(int return_code) {
     m_running = false;
     m_return_code = return_code;
   }
 
+  float get_total_time() { return m_total_time; }
+
   virtual void on_app_startup() {}
   virtual void on_app_loop(float delta_seconds) {}
   virtual void on_app_shutdown() {}
+
+  virtual void on_app_keydown(const SDL_KeyboardEvent &event) {}
+  virtual void on_app_keyup(const SDL_KeyboardEvent &event) {}
 };
 } // namespace example_support_library
