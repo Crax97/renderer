@@ -1,7 +1,7 @@
 #include "window.h"
+#include <SDL2/SDL.h>
 #include <SDL2/SDL_stdinc.h>
 #include <SDL2/SDL_video.h>
-#include <SDL2/SDL.h>
 
 #include <assert.h>
 
@@ -70,6 +70,12 @@ void renderer::window::SetNewFullscreen(bool NewFullscreen) noexcept {
     flags &= ~SDL_WINDOW_FULLSCREEN;
   }
   SDL_SetWindowFullscreen(this->SDLWin, flags);
+}
+
+void renderer::window::set_title(const std::string &new_title) noexcept {
+  assert(this->SDLWin);
+
+  SDL_SetWindowTitle(SDLWin, new_title.c_str());
 }
 
 renderer::window::~window() noexcept {

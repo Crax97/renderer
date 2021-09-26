@@ -11,6 +11,7 @@ find_package(SDL2 REQUIRED)
 
 set (OPENGL_SOURCES
         src/opengl/opengl_mesh.cpp
+        src/opengl/opengl_instanced_mesh.cpp
         src/opengl/opengl_texture.cpp
         src/opengl/opengl_shader.cpp
         src/opengl/opengl_graphics_api.cpp

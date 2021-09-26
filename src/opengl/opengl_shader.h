@@ -16,6 +16,8 @@ public:
   void use() override;
   void set_uniform_matrix4x4(const std::string &uniform_name,
                              float *mat4x4) override;
+  virtual void set_uniform_float(const std::string &uniform_name,
+                                 float value) override;
   void bind_textures(
       std::vector<std::pair<std::string, std::shared_ptr<texture>>> textures)
       override;

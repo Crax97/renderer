@@ -1,13 +1,12 @@
 #include "opengl_mesh.h"
-#include "opengl_shader.h"
 #include "glad/glad.h"
+#include "opengl_shader.h"
 #include <cassert>
 
 void renderer::opengl_mesh::add_face(const renderer::face &face) noexcept {}
 
 void renderer::opengl_mesh::draw() const noexcept {
-  glBindVertexArray(mesh_vao);
-  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, element_buffer);
+  bind();
   glDrawElements(GL_TRIANGLES, m_primitives_count, GL_UNSIGNED_INT, nullptr);
 }
 
@@ -69,7 +68,16 @@ renderer::opengl_mesh::~opengl_mesh() noexcept {
   if (normal_buffer != 0)
     glDeleteBuffers(1, &normal_buffer);
 
-  assert(!glIsBuffer(vertex_buffer) && !glIsBuffer(texcoord_buffer) && !glIsBuffer(normal_buffer) && !glIsBuffer(element_buffer));
+  assert(!glIsBuffer(vertex_buffer) && !glIsBuffer(texcoord_buffer) &&
+         !glIsBuffer(normal_buffer) && !glIsBuffer(element_buffer));
 
   glDeleteVertexArrays(1, &mesh_vao);
+}
+
+void renderer::opengl_mesh::bind() const noexcept {
+  glBindVertexArray(mesh_vao);
+  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, element_buffer);
+}
+size_t renderer::opengl_mesh::element_count() const noexcept {
+  return m_primitives_count;
 }

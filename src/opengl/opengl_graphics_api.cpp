@@ -1,4 +1,5 @@
 #include "opengl_graphics_api.h"
+#include "opengl_instanced_mesh.h"
 #include "opengl_mesh.h"
 #include "opengl_shader.h"
 #include "opengl_texture.h"
@@ -104,7 +105,8 @@ void APIENTRY gl_debug_message_callback(GLenum source, GLenum type, GLuint id,
             << " severity, raised from " << _source << ": " << msg << "\n";
 }
 
-renderer::opengl_graphics_api::opengl_graphics_api(SDL_Window *Window) noexcept {
+renderer::opengl_graphics_api::opengl_graphics_api(
+    SDL_Window *Window) noexcept {
   assert(Window);
   this->GLContext = SDL_GL_CreateContext(Window);
   this->Window = Window;
@@ -115,6 +117,7 @@ renderer::opengl_graphics_api::opengl_graphics_api(SDL_Window *Window) noexcept 
   glEnable(GL_BLEND);
   glEnable(GL_DEPTH_TEST);
   glEnable(GL_STENCIL_TEST);
+  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 #ifdef DEBUG
   glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
@@ -147,28 +150,36 @@ renderer::opengl_graphics_api::~opengl_graphics_api() noexcept {
   SDL_GL_DeleteContext(this->GLContext);
 }
 
-void* renderer::opengl_graphics_api::map_constant_buffer_impl(const size_t buffer_size)
-{
-    glBindBuffer(GL_UNIFORM_BUFFER, m_unif_block_buffer);
+void *renderer::opengl_graphics_api::map_constant_buffer_impl(
+    const size_t buffer_size) {
+  glBindBuffer(GL_UNIFORM_BUFFER, m_unif_block_buffer);
 
-    GLint current_buffer_size;
-    glGetBufferParameteriv(GL_UNIFORM_BUFFER, GL_BUFFER_SIZE, &current_buffer_size);
-    if (current_buffer_size < buffer_size) {
-        resize_uniform_buffer(buffer_size);
-    }
-    return glMapBuffer(GL_UNIFORM_BUFFER, GL_READ_WRITE);
+  GLint current_buffer_size;
+  glGetBufferParameteriv(GL_UNIFORM_BUFFER, GL_BUFFER_SIZE,
+                         &current_buffer_size);
+  if (current_buffer_size < buffer_size) {
+    resize_uniform_buffer(buffer_size);
+  }
+  return glMapBuffer(GL_UNIFORM_BUFFER, GL_READ_WRITE);
 }
 
-void renderer::opengl_graphics_api::resize_uniform_buffer(const size_t& buffer_size)
-{
+void renderer::opengl_graphics_api::resize_uniform_buffer(
+    const size_t &buffer_size) {
 
-    glBufferData(GL_UNIFORM_BUFFER, buffer_size, nullptr, GL_DYNAMIC_DRAW);
-    glBindBufferRange(GL_UNIFORM_BUFFER, 0, m_unif_block_buffer, 0, buffer_size);
+  glBufferData(GL_UNIFORM_BUFFER, buffer_size, nullptr, GL_DYNAMIC_DRAW);
+  glBindBufferRange(GL_UNIFORM_BUFFER, 0, m_unif_block_buffer, 0, buffer_size);
 }
 
-void renderer::opengl_graphics_api::unmap_constant_buffer()
-{
-    glUnmapBuffer(GL_UNIFORM_BUFFER);
+void renderer::opengl_graphics_api::unmap_constant_buffer() {
+  glUnmapBuffer(GL_UNIFORM_BUFFER);
+}
+
+std::shared_ptr<renderer::instanced_mesh>
+renderer::opengl_graphics_api::create_instanced_mesh(
+    const std::shared_ptr<renderer::mesh> &mesh_template,
+    std::unique_ptr<renderer::instance_descriptor> &&descriptor) noexcept {
+  return std::make_shared<opengl_instanced_mesh>(mesh_template,
+                                                 std::move(descriptor));
 }
 
 std::shared_ptr<renderer::mesh> renderer::opengl_graphics_api::create_mesh(
@@ -177,7 +188,8 @@ std::shared_ptr<renderer::mesh> renderer::opengl_graphics_api::create_mesh(
   return std::make_shared<opengl_mesh>(verts, texs, norms, ind);
 }
 
-std::shared_ptr<renderer::texture> renderer::opengl_graphics_api::create_texture(
+std::shared_ptr<renderer::texture>
+renderer::opengl_graphics_api::create_texture(
     unsigned char *data, int width, int height,
     renderer::texture_format format) noexcept {
 
@@ -206,7 +218,7 @@ std::shared_ptr<renderer::texture> renderer::opengl_graphics_api::create_texture
     gl_pixel_format = GL_DEPTH_COMPONENT32;
     break;
   case texture_format::unknown:
-      assert(false);
+    assert(false);
   }
 
   GLuint tex_id;

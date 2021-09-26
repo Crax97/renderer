@@ -21,6 +21,7 @@ public:
 
   bool IsFullscreen() const noexcept;
   void SetNewFullscreen(bool NewFullscreen) noexcept;
+  void set_title(const std::string &title) noexcept;
 
   ~window() noexcept;
 
