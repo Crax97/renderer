@@ -18,18 +18,14 @@ uniform float time;
 uniform vec3 gravity;
 
 void main() {
-    float t = lifetime;
-    vec3 position = initial_velocity * t + 0.5 * gravity * t * t;
-    float phi = initial_rotation + lifetime * rotation_rate;
-    // Build mvp matrix in place
-    mat4 rotation = mat4(
-        cos(phi), -sin(phi), 0, 0,
-        sin(phi), cos(phi), 0, 0,
-        0, 0, 1, 0,
-        position.x, position.y, position.z, 1
-    );
-    gl_Position = mvp * rotation * vec4(vertex, 1.0);
-    fs_texcoord = texcoord;
-    fs_texcoord.y = 1.0f - fs_texcoord.y;
-    fs_particle_color = color;
+  float t = lifetime;
+  vec3 position = initial_velocity * t + 0.5 * gravity * t * t;
+  float phi = initial_rotation + lifetime * rotation_rate;
+  // Build mvp matrix in place
+  mat4 rotation = mat4(cos(phi), -sin(phi), 0, 0, sin(phi), cos(phi), 0, 0, 0,
+                       0, 1, 0, position.x, position.y, position.z, 1);
+  gl_Position = mvp * rotation * vec4(vertex, 1.0);
+  fs_texcoord = texcoord;
+  fs_texcoord.y = 1.0f - fs_texcoord.y;
+  fs_particle_color = color;
 }

@@ -1,4 +1,5 @@
 #include "opengl_graphics_api.h"
+#include "opengl_framebuffer.h"
 #include "opengl_instanced_mesh.h"
 #include "opengl_mesh.h"
 #include "opengl_shader.h"
@@ -188,6 +189,24 @@ std::shared_ptr<renderer::mesh> renderer::opengl_graphics_api::create_mesh(
   return std::make_shared<opengl_mesh>(verts, texs, norms, ind);
 }
 
+std::shared_ptr<renderer::framebuffer>
+renderer::opengl_graphics_api::create_framebuffer(int width,
+                                                  int height) noexcept {
+  return std::make_shared<opengl_framebuffer>(*this, width, height);
+}
+
+int renderer::opengl_graphics_api::get_viewport_width() const noexcept {
+
+  int win_width, win_height;
+  SDL_GetWindowSize(this->Window, &win_width, &win_height);
+  return win_width;
+}
+int renderer::opengl_graphics_api::get_viewport_height() const noexcept {
+  int win_width, win_height;
+  SDL_GetWindowSize(this->Window, &win_width, &win_height);
+  return win_height;
+}
+
 std::shared_ptr<renderer::texture>
 renderer::opengl_graphics_api::create_texture(
     unsigned char *data, int width, int height,
@@ -198,7 +217,7 @@ renderer::opengl_graphics_api::create_texture(
   switch (format) {
 
   case texture_format::rgb:
-    gl_internal_format = GL_RGBA;
+    gl_internal_format = GL_RGB;
     gl_type = GL_UNSIGNED_BYTE;
     gl_pixel_format = GL_RGB;
     break;
@@ -213,9 +232,9 @@ renderer::opengl_graphics_api::create_texture(
     gl_pixel_format = GL_RED;
     break;
   case texture_format::depth_texture:
-    gl_internal_format = GL_DEPTH_COMPONENT;
+    gl_internal_format = GL_DEPTH_COMPONENT32F;
     gl_type = GL_FLOAT;
-    gl_pixel_format = GL_DEPTH_COMPONENT32;
+    gl_pixel_format = GL_DEPTH_COMPONENT;
     break;
   case texture_format::unknown:
     assert(false);
@@ -227,15 +246,15 @@ renderer::opengl_graphics_api::create_texture(
   glTexImage2D(GL_TEXTURE_2D, 0, gl_internal_format, width, height, 0,
                gl_pixel_format, gl_type, data);
 
-  if (width == height && data) {
+  if ((width == height) && data) {
     glGenerateMipmap(GL_TEXTURE_2D);
   } else {
-    glTextureParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTextureParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    glTextureParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTextureParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTextureParameteri(tex_id, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTextureParameteri(tex_id, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTextureParameteri(tex_id, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTextureParameteri(tex_id, GL_TEXTURE_WRAP_T, GL_REPEAT);
   }
-  return std::make_shared<opengl_texture>(tex_id);
+  return std::make_shared<opengl_texture>(tex_id, width, height);
 }
 
 std::string shader_type_to_str(GLenum type) {

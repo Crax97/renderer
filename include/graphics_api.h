@@ -30,6 +30,11 @@ public:
   virtual std::shared_ptr<class texture>
   create_texture(unsigned char *data, int width, int height,
                  texture_format format) noexcept = 0;
+  virtual std::shared_ptr<class framebuffer>
+  create_framebuffer(int width, int height) noexcept = 0;
+
+  virtual int get_viewport_width() const noexcept = 0;
+  virtual int get_viewport_height() const noexcept = 0;
 
   virtual void pre_draw() noexcept = 0;
   virtual void post_draw() noexcept = 0;

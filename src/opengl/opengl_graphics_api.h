@@ -29,6 +29,11 @@ public:
   create_texture(unsigned char *data, int width, int height,
                  texture_format format) noexcept override;
 
+  std::shared_ptr<class framebuffer>
+  create_framebuffer(int width, int height) noexcept override;
+  int get_viewport_width() const noexcept override;
+  int get_viewport_height() const noexcept override;
+
   void pre_draw() noexcept override;
   void post_draw() noexcept override;
 

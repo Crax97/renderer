@@ -4,6 +4,7 @@
 #include "SDL_keycode.h"
 #include "SDL_video.h"
 #include "api_factory.h"
+#include "framebuffer.h"
 #include "texture.h"
 #include "window.h"
 
@@ -40,6 +41,8 @@ private:
   std::shared_ptr<renderer::instanced_mesh> instanced_quad;
   std::shared_ptr<renderer::texture> particles_texture;
   std::shared_ptr<renderer::shader> particles_program;
+  std::shared_ptr<renderer::shader> simple_program;
+  std::shared_ptr<renderer::framebuffer> framebuffer;
 
   glm::mat4 compute_mvp(float delta_seconds) {
     location += movement * delta_seconds * 20.0f;
@@ -158,6 +161,9 @@ public:
     particles_program = api->compile_shader(
         utilities::read_file("assets/shaders/particles.vs"),
         utilities::read_file("assets/shaders/particles.fs"));
+    simple_program =
+        api->compile_shader(utilities::read_file("assets/shaders/simple.vs"),
+                            utilities::read_file("assets/shaders/basic.fs"));
     particles_texture =
         utilities::texture_load_from_path(api, "assets/textures/particle.png");
 
@@ -167,6 +173,7 @@ public:
     std::for_each(particles.begin(), particles.end(),
                   [&](auto &particle) { setup_instance(particle); });
     instanced_quad->configure_for_shader(particles_program);
+    framebuffer = api->create_framebuffer(1024, 720);
   }
 
   void on_app_loop(float delta_seconds) override {
@@ -182,11 +189,17 @@ public:
     copy_instance_buffer();
 
     api->pre_draw();
-
+    framebuffer->bind();
     // draw automatically uses the shader for which it's configured
     // with instanced drawing
     instanced_quad->draw();
-    // quad_mesh->draw();
+    framebuffer->unbind();
+
+    simple_program->use();
+    simple_program->bind_textures(
+        {{"diffuse"s, framebuffer->get_color_texture()}});
+    quad_mesh->draw();
+
     api->post_draw();
 
     float fps = 60.0f / delta_seconds;
