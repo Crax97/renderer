@@ -23,15 +23,13 @@ class particles_app : public example_support_library::application {
 private:
   struct instance_data {
     glm::vec3 initial_velocity;
-    /*
-    glm::mat3 rotation_mat;
     glm::vec3 color;
     float opacity;
-    */
     float lifetime;
-    // float rotation;
+    float initial_rotation;
+    float rotation_rate;
   };
-  constexpr static int max_instances = 500;
+  constexpr static int max_instances = 25000;
   constexpr static float max_lifetime = 3.0f; // seconds
   std::default_random_engine m_engine;
   glm::vec3 movement{0};
@@ -61,7 +59,7 @@ private:
 
   glm::vec3 make_random_initial_velocity() {
     float x = random_interval(-10.0f, 10.0f);
-    float y = random_interval(6.0f, 9.8f);
+    float y = random_interval(6.0f, 15.0f);
     float z = 0.0f;
     return {x, y, z};
   }
@@ -76,13 +74,10 @@ private:
   void setup_instance(instance_data &instance) {
     instance.initial_velocity = make_random_initial_velocity();
     instance.lifetime = random_interval(0.0f, 1.5f);
-    /*
-    instance.rotation_mat = glm::mat3(0.0f);
-    instance.rotation = 0.0f;
+    instance.initial_rotation = random_interval(0.0f, 3.14f);
+    instance.rotation_rate = random_interval(-3.14f, 3.14f);
     instance.color = make_random_color();
-    instance.lifetime = 0.0f;
-    instance.opacity = 1.0f;
-    */
+    instance.opacity = random_interval(0.0f, 1.0f);
   };
   void update_instances(float delta_time) {
     for (auto &instance_data : particles) {
@@ -113,46 +108,44 @@ public:
     class c_quad_data_descriptor : public renderer::instance_descriptor {
 
       std::vector<renderer::attrib_descriptor> get_descriptors() override {
-        return {{
-                    "initial_velocity",
-                    renderer::attrib_data_type::Float,
-                    renderer::attrib_element_count::Three,
-                    offsetof(instance_data, initial_velocity),
-                },
-                /*
-                {
-                    "rotation_mat",
-                    renderer::attrib_data_type::Float,
-                    renderer::attrib_element_count::Mat3,
-                    offsetof(instance_data, rotation_mat),
-                },
-                {
-                    "color",
-                    renderer::attrib_data_type::Float,
-                    renderer::attrib_element_count::Three,
-                    offsetof(instance_data, color),
-                },
-                {
-                    "opacity",
-                    renderer::attrib_data_type::Float,
-                    renderer::attrib_element_count::One,
-                    offsetof(instance_data, opacity),
-                },
-                */
-        {
-            "lifetime",
-            renderer::attrib_data_type::Float,
-            renderer::attrib_element_count::One,
-            offsetof(instance_data, lifetime),
-        },
-                /*
-                {
-                    "rotation",
-                    renderer::attrib_data_type::Float,
-                    renderer::attrib_element_count::One,
-                    offsetof(instance_data, rotation),
-                }
-                */};
+        return {
+            {
+                "initial_velocity",
+                renderer::attrib_data_type::Float,
+                renderer::attrib_element_count::Three,
+                offsetof(instance_data, initial_velocity),
+            },
+            {
+                "initial_rotation",
+                renderer::attrib_data_type::Float,
+                renderer::attrib_element_count::Mat3,
+                offsetof(instance_data, initial_rotation),
+            },
+            {
+                "rotation_rate",
+                renderer::attrib_data_type::Float,
+                renderer::attrib_element_count::Mat3,
+                offsetof(instance_data, rotation_rate),
+            },
+            {
+                "color",
+                renderer::attrib_data_type::Float,
+                renderer::attrib_element_count::Three,
+                offsetof(instance_data, color),
+            },
+            {
+                "opacity",
+                renderer::attrib_data_type::Float,
+                renderer::attrib_element_count::One,
+                offsetof(instance_data, opacity),
+            },
+            {
+                "lifetime",
+                renderer::attrib_data_type::Float,
+                renderer::attrib_element_count::One,
+                offsetof(instance_data, lifetime),
+            },
+        };
       }
       size_t get_stride() override { return sizeof(instance_data); }
       size_t get_element_size() override { return sizeof(instance_data); }
