@@ -30,7 +30,7 @@ private:
     float rotation_rate;
   };
   constexpr static int max_instances = 25000;
-  constexpr static float max_lifetime = 3.0f; // seconds
+  constexpr static float max_lifetime = 5.0f; // seconds
   std::default_random_engine m_engine;
   glm::vec3 movement{0};
   glm::vec3 location{0, 0, 0};
@@ -58,8 +58,8 @@ private:
   }
 
   glm::vec3 make_random_initial_velocity() {
-    float x = random_interval(-10.0f, 10.0f);
-    float y = random_interval(6.0f, 15.0f);
+    float x = random_interval(-40.0f, 40.0f);
+    float y = random_interval(6.0f, 18.0f);
     float z = 0.0f;
     return {x, y, z};
   }
@@ -73,7 +73,7 @@ private:
 
   void setup_instance(instance_data &instance) {
     instance.initial_velocity = make_random_initial_velocity();
-    instance.lifetime = random_interval(0.0f, 1.5f);
+    instance.lifetime = random_interval(0.0f, 3.5f);
     instance.initial_rotation = random_interval(0.0f, 3.14f);
     instance.rotation_rate = random_interval(-3.14f, 3.14f);
     instance.color = make_random_color();
