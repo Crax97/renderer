@@ -60,6 +60,18 @@ void renderer::opengl_shader::set_uniform_float(const std::string &uniform_name,
   }
   glProgramUniform1f(m_program, uniform_location, value);
 }
+
+void renderer::opengl_shader::set_uniform_vec3(const std::string &uniform_name,
+                                               float *vec) {
+  auto uniform_location = get_uniform_location(uniform_name);
+  if (uniform_location == -1) {
+    // log error
+    return;
+  }
+  auto diff_loc = get_uniform_location("diffuse");
+  glProgramUniform3fv(m_program, uniform_location, 1, vec);
+}
+
 void renderer::opengl_shader::bind_textures(
     std::vector<std::pair<std::string, std::shared_ptr<texture>>> textures) {
 

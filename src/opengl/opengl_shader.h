@@ -18,6 +18,7 @@ public:
                              float *mat4x4) override;
   virtual void set_uniform_float(const std::string &uniform_name,
                                  float value) override;
+  void set_uniform_vec3(const std::string &uniform_name, float *vec) override;
   void bind_textures(
       std::vector<std::pair<std::string, std::shared_ptr<texture>>> textures)
       override;

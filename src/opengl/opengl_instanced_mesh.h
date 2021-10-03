@@ -17,8 +17,7 @@ private:
 
 protected:
   void add_instance_impl(void *instance_ptr) noexcept override;
-  void *map_instance_buffer_impl(
-      const size_t min_buffer_size_bytes) noexcept override;
+  void *map_instance_buffer_impl(const size_t elem_count) noexcept override;
 
 public:
   opengl_instanced_mesh(std::shared_ptr<renderer::mesh> mesh,
@@ -27,6 +26,8 @@ public:
   bool configure_for_shader(
       std::shared_ptr<class shader> requiredShader) noexcept override;
   void add_face(const face &face) noexcept override {}
+  void clear() noexcept override;
   void draw() const noexcept override;
+  void draw(int instance_count) const noexcept;
 };
 } // namespace renderer

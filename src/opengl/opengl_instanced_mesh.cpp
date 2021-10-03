@@ -107,8 +107,11 @@ void renderer::opengl_instanced_mesh::unmap_instance_buffer() {
   glUnmapBuffer(GL_ARRAY_BUFFER);
 }
 void *renderer::opengl_instanced_mesh::map_instance_buffer_impl(
-    const size_t min_buffer_size_bytes) noexcept {
-  ensure_buffer_has_enough_size(min_buffer_size_bytes);
+    const size_t elem_count) noexcept {
+  ensure_buffer_has_enough_size(elem_count * m_descriptor->get_element_size());
+  if (current_element_count < elem_count) {
+    current_element_count = elem_count;
+  }
   glBindBuffer(GL_ARRAY_BUFFER, mesh_instance_buffer);
   auto *mapped = glMapBuffer(GL_ARRAY_BUFFER, GL_READ_WRITE);
   return mapped;
@@ -154,9 +157,18 @@ bool renderer::opengl_instanced_mesh::configure_for_shader(
   return true;
 }
 
+void renderer::opengl_instanced_mesh::clear() noexcept {
+  // reuse the instance buffer
+  current_element_count = 0;
+}
+
 void renderer::opengl_instanced_mesh::draw() const noexcept {
+  draw(current_element_count);
+}
+void renderer::opengl_instanced_mesh::draw(int instance_count) const noexcept {
+  assert(instance_count <= current_element_count);
   glUseProgram(m_associated_program);
   m_mesh->bind();
   glDrawElementsInstanced(GL_TRIANGLES, m_mesh->element_count(),
-                          GL_UNSIGNED_INT, nullptr, current_element_count);
+                          GL_UNSIGNED_INT, nullptr, instance_count);
 }

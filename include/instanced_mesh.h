@@ -22,7 +22,6 @@ struct attrib_descriptor {
   std::string attrib_name;
   attrib_data_type type;
   attrib_element_count el_count;
-  size_t size;
   size_t offset;
 };
 class instance_descriptor {
@@ -55,14 +54,15 @@ public:
     return m_mesh->element_count();
   }
 
+  virtual void clear() noexcept = 0;
+
   virtual void unmap_instance_buffer() = 0;
   template <typename T> void add_instance(T element) noexcept {
     add_instance_impl(static_cast<void *>(&element));
   }
   template <typename T>
   T *map_instance_buffer(const size_t min_num_elements) noexcept {
-    return static_cast<T *>(
-        map_instance_buffer_impl(min_num_elements * sizeof(T)));
+    return static_cast<T *>(map_instance_buffer_impl(min_num_elements));
   }
 };
 } // namespace renderer
