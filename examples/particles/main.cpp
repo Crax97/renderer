@@ -161,9 +161,9 @@ public:
     particles_program = api->compile_shader(
         utilities::read_file("assets/shaders/particles.vs"),
         utilities::read_file("assets/shaders/particles.fs"));
-    simple_program =
-        api->compile_shader(utilities::read_file("assets/shaders/simple.vs"),
-                            utilities::read_file("assets/shaders/basic.fs"));
+    simple_program = api->compile_shader(
+        utilities::read_file("assets/shaders/simple.vs"),
+        utilities::read_file("assets/shaders/post_render_effects/rainbow.fs"));
     particles_texture =
         utilities::texture_load_from_path(api, "assets/textures/particle.png");
 
@@ -184,6 +184,7 @@ public:
     particles_program->bind_textures({{"diffuse"s, particles_texture}});
     particles_program->set_uniform_matrix4x4("mvp", &mvp[0][0]);
     particles_program->set_uniform_float("time", get_total_time());
+    simple_program->set_uniform_float("time", get_total_time());
     particles_program->set_uniform_vec3("gravity", &gravity.x);
     update_instances(delta_seconds);
     copy_instance_buffer();
